@@ -18,6 +18,7 @@
     "release": "changeset publish",
     "start": "turbo run start",
     "test": "turbo run test",
+    "typecheck": "turbo run typecheck",
     "version": "changeset version"
   },
   "workspaces": [

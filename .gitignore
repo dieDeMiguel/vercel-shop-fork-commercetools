@@ -4,6 +4,7 @@
 node_modules
 /.pnp
 .pnp.*
+.pnpm-store/
 .yarn/*
 !.yarn/patches
 !.yarn/plugins
@@ -56,3 +57,7 @@ certificates
 
 # opensrc - source code for packages
 opensrc/
+
+ralph/*
+plans/*
+prd/*

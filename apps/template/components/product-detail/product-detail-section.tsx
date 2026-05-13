@@ -18,6 +18,7 @@ import {
 import { ProductPrice } from "@/components/product-detail/product-price";
 import { ShopLogo } from "@/components/product-detail/shop-logo";
 import { Skeleton } from "@/components/ui/skeleton";
+import { isBrandCatalogActive } from "@/lib/brand-catalog/server";
 import type { Locale } from "@/lib/i18n";
 import {
   computeInitialSelectedOptions,
@@ -177,7 +178,7 @@ export async function ProductDetailSection({
             />
           </Suspense>
         )}
-        {singleVariant && eagerSelectedVariant ? (
+        {isBrandCatalogActive() ? null : singleVariant && eagerSelectedVariant ? (
           <BuyButtons
             selectedVariant={eagerSelectedVariant}
             title={title}

@@ -1,5 +1,6 @@
 import { cacheLife, cacheTag } from "next/cache";
 
+import { loadBrandCatalog, toProductCard, toProductDetails } from "@/lib/brand-catalog/server";
 import { defaultLocale, getCountryCode, getLanguageCode } from "@/lib/i18n";
 import type { PageInfo, ProductCard, ProductDetails } from "@/lib/types";
 
@@ -41,6 +42,15 @@ export async function getProduct(handle: string, locale: string = defaultLocale)
   "use cache";
   cacheLife("max");
   cacheTag("products", `product-${handle}`);
+
+  const brandCatalog = loadBrandCatalog();
+  if (brandCatalog) {
+    const match = brandCatalog.products.find((entry) => entry.handle === handle);
+    if (match) {
+      return toProductDetails(match, brandCatalog.brandName);
+    }
+  }
+
   const country = getCountryCode(locale);
   const language = getLanguageCode(locale);
 
@@ -338,6 +348,22 @@ async function fetchCatalogProducts({
   filters = [],
   locale = defaultLocale,
 }: FilteredCatalogProductsParams): Promise<CatalogProductsResult> {
+  const brandCatalog = loadBrandCatalog();
+  if (brandCatalog) {
+    const products = brandCatalog.products
+      .slice(0, limit)
+      .map((entry) => toProductCard(entry, brandCatalog.brandName));
+    return {
+      products,
+      pageInfo: {
+        hasNextPage: false,
+        hasPreviousPage: false,
+        startCursor: null,
+        endCursor: null,
+      },
+    };
+  }
+
   const sortConfig = CATALOG_SORT_KEY_MAP[rawSortKey] ?? CATALOG_SORT_KEY_MAP["best-matches"];
   const country = getCountryCode(locale);
   const language = getLanguageCode(locale);
@@ -585,6 +611,23 @@ export async function getCollectionProducts(params: {
     locale = defaultLocale,
   } = params;
 
+  const brandCatalog = loadBrandCatalog();
+  if (brandCatalog) {
+    const products = brandCatalog.products
+      .slice(0, limit)
+      .map((entry) => toProductCard(entry, brandCatalog.brandName));
+    return {
+      products,
+      pageInfo: {
+        hasNextPage: false,
+        hasPreviousPage: false,
+        startCursor: null,
+        endCursor: null,
+      },
+      filters: [],
+    };
+  }
+
   const sortConfig = COLLECTION_SORT_KEY_MAP[rawSortKey] ?? COLLECTION_SORT_KEY_MAP["best-matches"];
   const country = getCountryCode(locale);
   const language = getLanguageCode(locale);
@@ -654,6 +697,13 @@ export async function getProductRecommendations(
   "use cache";
   cacheLife("max");
   cacheTag("products", `recommendations-${handle}`);
+
+  const brandCatalog = loadBrandCatalog();
+  if (brandCatalog) {
+    return brandCatalog.products
+      .filter((entry) => entry.handle !== handle)
+      .map((entry) => toProductCard(entry, brandCatalog.brandName));
+  }
 
   const country = getCountryCode(locale);
   const language = getLanguageCode(locale);
@@ -791,30 +841,41 @@ export async function getProductsByHandles(
     return [];
   }
 
-  const country = getCountryCode(locale);
-  const language = getLanguageCode(locale);
-
-  // Build search query: "handle:foo OR handle:bar OR handle:baz"
-  const searchQuery = handles.map((h) => `handle:${h}`).join(" OR ");
-
-  const data = await shopifyFetch<{
-    products: { edges: Array<{ node: ShopifyProductCard }> };
-  }>({
-    operation: "getProductsByHandles",
-    query: GET_PRODUCTS_BY_HANDLES_QUERY,
-    variables: { query: searchQuery, first: handles.length, country, language },
-  });
-
-  const productMap = new Map<string, ShopifyProductCard>();
-  for (const edge of data.products.edges) {
-    productMap.set(edge.node.handle, edge.node);
+  const brandCatalog = loadBrandCatalog();
+  const fixtureCards = new Map<string, ProductCard>();
+  if (brandCatalog) {
+    for (const entry of brandCatalog.products) {
+      fixtureCards.set(entry.handle, toProductCard(entry, brandCatalog.brandName));
+    }
   }
 
-  const shopifyProducts = handles
-    .map((handle) => productMap.get(handle))
-    .filter((product): product is ShopifyProductCard => product !== undefined);
+  const missingHandles = handles.filter((handle) => !fixtureCards.has(handle));
 
-  tagProducts(shopifyProducts);
+  const shopifyCards = new Map<string, ProductCard>();
+  if (missingHandles.length > 0) {
+    const country = getCountryCode(locale);
+    const language = getLanguageCode(locale);
 
-  return shopifyProducts.map(transformShopifyProductCard);
+    // Build search query: "handle:foo OR handle:bar OR handle:baz"
+    const searchQuery = missingHandles.map((h) => `handle:${h}`).join(" OR ");
+
+    const data = await shopifyFetch<{
+      products: { edges: Array<{ node: ShopifyProductCard }> };
+    }>({
+      operation: "getProductsByHandles",
+      query: GET_PRODUCTS_BY_HANDLES_QUERY,
+      variables: { query: searchQuery, first: missingHandles.length, country, language },
+    });
+
+    const shopifyNodes = data.products.edges.map((edge) => edge.node);
+    tagProducts(shopifyNodes);
+
+    for (const node of shopifyNodes) {
+      shopifyCards.set(node.handle, transformShopifyProductCard(node));
+    }
+  }
+
+  return handles
+    .map((handle) => fixtureCards.get(handle) ?? shopifyCards.get(handle))
+    .filter((card): card is ProductCard => card !== undefined);
 }
