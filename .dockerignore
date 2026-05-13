@@ -1,0 +1,31 @@
+# dependencies (re-installed inside the sandbox if needed)
+node_modules
+
+# Next.js / framework build output
+.next
+out
+dist
+build
+*.tgz
+
+# Turborepo + tooling caches
+.turbo
+.cache
+.swc
+*.tsbuildinfo
+
+# Test coverage
+coverage
+*.lcov
+
+# Editor / OS noise
+.DS_Store
+.idea
+.vscode
+
+# Vercel local artifacts
+.vercel
+
+# open-agents dev server runtime state
+.open-agents-dev-server-state.json
+.open-agents-dev-server-*.pid

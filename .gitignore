@@ -56,3 +56,7 @@ certificates
 
 # opensrc - source code for packages
 opensrc/
+
+ralph/*
+plans/*
+prd/*
