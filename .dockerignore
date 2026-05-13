@@ -1,5 +1,6 @@
 # dependencies (re-installed inside the sandbox if needed)
 node_modules
+.pnpm-store
 
 # Next.js / framework build output
 .next

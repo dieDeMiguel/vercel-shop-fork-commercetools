@@ -1,5 +1,6 @@
 import { cacheLife, cacheTag } from "next/cache";
 
+import { loadBrandCatalog, toProductCard } from "@/lib/brand-catalog/server";
 import { defaultLocale, getCountryCode, getLanguageCode } from "@/lib/i18n";
 import type { PageInfo, ProductCard, ProductDetails } from "@/lib/types";
 
@@ -338,6 +339,22 @@ async function fetchCatalogProducts({
   filters = [],
   locale = defaultLocale,
 }: FilteredCatalogProductsParams): Promise<CatalogProductsResult> {
+  const brandCatalog = loadBrandCatalog();
+  if (brandCatalog) {
+    const products = brandCatalog.products
+      .slice(0, limit)
+      .map((entry) => toProductCard(entry, brandCatalog.brandName));
+    return {
+      products,
+      pageInfo: {
+        hasNextPage: false,
+        hasPreviousPage: false,
+        startCursor: null,
+        endCursor: null,
+      },
+    };
+  }
+
   const sortConfig = CATALOG_SORT_KEY_MAP[rawSortKey] ?? CATALOG_SORT_KEY_MAP["best-matches"];
   const country = getCountryCode(locale);
   const language = getLanguageCode(locale);

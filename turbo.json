@@ -5,6 +5,7 @@
     "BETTER_AUTH_BASE_URL",
     "BETTER_AUTH_SECRET",
     "BETTER_AUTH_TRUSTED_ORIGINS",
+    "BRAND_CATALOG_DISABLE",
     "CMS_DRAFT_MODE_SECRET",
     "DEBUG_SHOPIFY",
     "NEXT_PUBLIC_BASE_URL",
@@ -32,6 +33,12 @@
     "dev": {
       "persistent": true,
       "cache": false
+    },
+    "test": {
+      "dependsOn": ["^test"]
+    },
+    "typecheck": {
+      "dependsOn": ["^typecheck"]
     }
   }
 }
