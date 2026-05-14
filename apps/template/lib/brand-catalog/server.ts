@@ -2,7 +2,12 @@ import "server-only";
 import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 
-import type { Money, ProductCard, ProductDetails } from "@/lib/types";
+import type { Money, ProductCard, ProductDetails, ProductVariant } from "@/lib/types";
+
+export interface BrandCatalogVariant {
+  id?: string;
+  title?: string;
+}
 
 export interface BrandCatalogEntry {
   id: string;
@@ -18,6 +23,7 @@ export interface BrandCatalogEntry {
   altText: string;
   tags: string[];
   availableForSale: boolean;
+  variant?: BrandCatalogVariant;
 }
 
 export interface BrandCatalog {
@@ -87,9 +93,29 @@ export function toProductCard(entry: BrandCatalogEntry, brandName: string): Prod
   };
 }
 
+function toCanonicalVariant(entry: BrandCatalogEntry): ProductVariant {
+  return {
+    id: entry.variant?.id ?? `gid://brand-catalog/ProductVariant/${entry.handle}`,
+    title: entry.variant?.title ?? "Default Title",
+    availableForSale: entry.availableForSale,
+    price: entry.price,
+    compareAtPrice: entry.compareAtPrice,
+    selectedOptions: [],
+    image: entry.featuredImagePath
+      ? {
+          url: entry.featuredImagePath,
+          altText: entry.altText ?? entry.title,
+          width: 0,
+          height: 0,
+        }
+      : null,
+  };
+}
+
 export function toProductDetails(entry: BrandCatalogEntry, brandName: string): ProductDetails {
   const card = toProductCard(entry, brandName);
   const vendor = card.vendor ?? brandName;
+  const variants = entry.variant ? [toCanonicalVariant(entry)] : [];
 
   return {
     ...card,
@@ -97,7 +123,7 @@ export function toProductDetails(entry: BrandCatalogEntry, brandName: string): P
     descriptionHtml: entry.descriptionHtml,
     images: card.images,
     videos: [],
-    variants: [],
+    variants,
     options: [],
     tags: entry.tags ?? [],
     seo: {

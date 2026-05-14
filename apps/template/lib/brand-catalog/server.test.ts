@@ -180,6 +180,64 @@ describe("toProductDetails", () => {
     );
     expect(details.featuredImage?.url).toBe("/brand/product-aero-driver-gloves.webp");
   });
+
+  it("emits variants: [] and options: [] when variant is omitted (backward compat)", () => {
+    const details = toProductDetails(baseEntry, "Aero");
+    expect(details.variants).toEqual([]);
+    expect(details.options).toEqual([]);
+  });
+
+  it("emits a single canonical variant when variant is present", () => {
+    const details = toProductDetails({ ...baseEntry, variant: {} }, "Aero");
+    expect(details.variants).toHaveLength(1);
+    expect(details.options).toEqual([]);
+  });
+
+  it("synthesises canonical variant id and title when variant is empty object", () => {
+    const details = toProductDetails({ ...baseEntry, variant: {} }, "Aero");
+    const [variant] = details.variants;
+    expect(variant?.id).toBe("gid://brand-catalog/ProductVariant/aero-driver-gloves");
+    expect(variant?.title).toBe("Default Title");
+  });
+
+  it("respects caller-provided variant id and title", () => {
+    const details = toProductDetails(
+      {
+        ...baseEntry,
+        variant: { id: "gid://brand-catalog/ProductVariant/custom", title: "One Size" },
+      },
+      "Aero",
+    );
+    const [variant] = details.variants;
+    expect(variant?.id).toBe("gid://brand-catalog/ProductVariant/custom");
+    expect(variant?.title).toBe("One Size");
+  });
+
+  it("canonical variant inherits price, compareAtPrice and availableForSale from the entry", () => {
+    const details = toProductDetails(
+      {
+        ...baseEntry,
+        compareAtPrice: { amount: "229.00", currencyCode: "USD" },
+        availableForSale: false,
+        variant: {},
+      },
+      "Aero",
+    );
+    const [variant] = details.variants;
+    expect(variant?.price).toEqual({ amount: "189.00", currencyCode: "USD" });
+    expect(variant?.compareAtPrice).toEqual({ amount: "229.00", currencyCode: "USD" });
+    expect(variant?.availableForSale).toBe(false);
+  });
+
+  it("canonical variant carries no selectedOptions (single canonical, no matrix yet)", () => {
+    const details = toProductDetails({ ...baseEntry, variant: {} }, "Aero");
+    expect(details.variants[0]?.selectedOptions).toEqual([]);
+  });
+
+  it("canonical variant image matches featuredImagePath", () => {
+    const details = toProductDetails({ ...baseEntry, variant: {} }, "Aero");
+    expect(details.variants[0]?.image?.url).toBe("/brand/product-aero-driver-gloves.webp");
+  });
 });
 
 describe("loadBrandCatalog", () => {
