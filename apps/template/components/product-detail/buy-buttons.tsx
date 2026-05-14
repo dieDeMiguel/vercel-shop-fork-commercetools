@@ -110,7 +110,7 @@ export function BuyButtons({
         type="button"
         disabled={isOutOfStock}
         onClick={handleAddToCart}
-        className="flex-1 justify-center h-12 bg-foreground text-background hover:bg-foreground/90"
+        className="flex-1 justify-center h-12 bg-primary text-primary-foreground hover:bg-primary/90"
       >
         {getButtonText()}
       </Button>

@@ -40,11 +40,13 @@ export async function FeaturedProducts({
   return (
     <div className="grid gap-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl sm:text-3xl font-semibold tracking-tighter">{title}</h2>
+        <h2 className="text-2xl sm:text-3xl font-display font-semibold tracking-tighter">
+          {title}
+        </h2>
         {collectionUrl && (
           <Link
             href={collectionUrl}
-            className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+            className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors"
           >
             {t("viewAll")}
           </Link>

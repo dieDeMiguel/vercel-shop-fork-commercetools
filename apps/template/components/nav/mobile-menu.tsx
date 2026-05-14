@@ -111,7 +111,7 @@ function MobileMenuList({
                 <MenuLink
                   url={item.url}
                   onClick={onLinkClick}
-                  className="mt-3 block text-xs font-medium uppercase tracking-wide text-muted-foreground hover:text-foreground transition-colors"
+                  className="mt-3 block text-xs font-medium uppercase tracking-wide text-muted-foreground hover:text-primary transition-colors"
                 >
                   {showAllLabel(item.title)}
                 </MenuLink>
@@ -153,7 +153,7 @@ function NestedItems({ items, onLinkClick }: { items: MenuItem[]; onLinkClick: (
                   <MenuLink
                     url={leaf.url}
                     onClick={onLinkClick}
-                    className="block text-sm text-muted-foreground hover:text-foreground transition-colors"
+                    className="block text-sm text-muted-foreground hover:text-primary transition-colors"
                   >
                     {leaf.title}
                   </MenuLink>

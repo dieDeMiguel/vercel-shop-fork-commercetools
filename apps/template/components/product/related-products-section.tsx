@@ -19,7 +19,9 @@ export function RelatedProductsSectionSkeleton({
     <div className="overflow-x-clip">
       <div className="mx-auto min-w-0 grid gap-4">
         {title ? (
-          <h2 className="text-2xl sm:text-3xl font-semibold tracking-tighter">{title}</h2>
+          <h2 className="text-2xl sm:text-3xl font-display font-semibold tracking-tighter">
+            {title}
+          </h2>
         ) : (
           <Skeleton className="h-9 w-48" />
         )}
