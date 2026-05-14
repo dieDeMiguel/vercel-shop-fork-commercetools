@@ -81,6 +81,49 @@ describe("toProductCard", () => {
     expect(b.handle).toBe("kilo-gloves");
     expect(a.id).not.toBe(b.id);
   });
+
+  it("returns images as [featuredImage] when additionalImagePaths is omitted (backward compat)", () => {
+    const card = toProductCard(baseEntry, "Aero");
+    expect(card.images).toHaveLength(1);
+    expect(card.images[0]?.url).toBe("/brand/product-aero-driver-gloves.webp");
+  });
+
+  it("treats additionalImagePaths: [] as equivalent to omitting it", () => {
+    const card = toProductCard({ ...baseEntry, additionalImagePaths: [] }, "Aero");
+    expect(card.images).toHaveLength(1);
+    expect(card.images[0]?.url).toBe("/brand/product-aero-driver-gloves.webp");
+  });
+
+  it("prepends featuredImage and preserves order of additionalImagePaths", () => {
+    const card = toProductCard(
+      {
+        ...baseEntry,
+        additionalImagePaths: [
+          "/brand/product-aero-driver-gloves-2.webp",
+          "/brand/product-aero-driver-gloves-3.webp",
+          "/brand/product-aero-driver-gloves-4.webp",
+        ],
+      },
+      "Aero",
+    );
+    expect(card.images.map((img) => img.url)).toEqual([
+      "/brand/product-aero-driver-gloves.webp",
+      "/brand/product-aero-driver-gloves-2.webp",
+      "/brand/product-aero-driver-gloves-3.webp",
+      "/brand/product-aero-driver-gloves-4.webp",
+    ]);
+  });
+
+  it("applies entry altText to all additional images", () => {
+    const card = toProductCard(
+      {
+        ...baseEntry,
+        additionalImagePaths: ["/brand/product-aero-driver-gloves-2.webp"],
+      },
+      "Aero",
+    );
+    expect(card.images.every((img) => img.altText === "Aero driver gloves on display")).toBe(true);
+  });
 });
 
 describe("toProductDetails", () => {
@@ -99,6 +142,43 @@ describe("toProductDetails", () => {
   it("falls back manufacturerName to brandName when vendor empty", () => {
     const details = toProductDetails({ ...baseEntry, vendor: "" }, "Aero");
     expect(details.manufacturerName).toBe("Aero");
+  });
+
+  it("renders a single image when additionalImagePaths is omitted (backward compat)", () => {
+    const details = toProductDetails(baseEntry, "Aero");
+    expect(details.images).toHaveLength(1);
+    expect(details.images[0]?.url).toBe("/brand/product-aero-driver-gloves.webp");
+  });
+
+  it("populates images with the full set when additionalImagePaths is present", () => {
+    const details = toProductDetails(
+      {
+        ...baseEntry,
+        additionalImagePaths: [
+          "/brand/product-aero-driver-gloves-2.webp",
+          "/brand/product-aero-driver-gloves-3.webp",
+          "/brand/product-aero-driver-gloves-4.webp",
+        ],
+      },
+      "Aero",
+    );
+    expect(details.images.map((img) => img.url)).toEqual([
+      "/brand/product-aero-driver-gloves.webp",
+      "/brand/product-aero-driver-gloves-2.webp",
+      "/brand/product-aero-driver-gloves-3.webp",
+      "/brand/product-aero-driver-gloves-4.webp",
+    ]);
+  });
+
+  it("keeps featuredImage as the single featuredImagePath even when additional images exist", () => {
+    const details = toProductDetails(
+      {
+        ...baseEntry,
+        additionalImagePaths: ["/brand/product-aero-driver-gloves-2.webp"],
+      },
+      "Aero",
+    );
+    expect(details.featuredImage?.url).toBe("/brand/product-aero-driver-gloves.webp");
   });
 });
 

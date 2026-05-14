@@ -14,6 +14,7 @@ export interface BrandCatalogEntry {
   price: Money;
   compareAtPrice?: Money;
   featuredImagePath: string;
+  additionalImagePaths?: string[];
   altText: string;
   tags: string[];
   availableForSale: boolean;
@@ -58,21 +59,26 @@ export function isBrandCatalogActive(): boolean {
 }
 
 export function toProductCard(entry: BrandCatalogEntry, brandName: string): ProductCard {
+  const altText = entry.altText ?? entry.title;
   const featuredImage = entry.featuredImagePath
-    ? {
-        url: entry.featuredImagePath,
-        altText: entry.altText ?? entry.title,
-        width: 0,
-        height: 0,
-      }
+    ? { url: entry.featuredImagePath, altText, width: 0, height: 0 }
     : null;
+
+  const additionalImages = (entry.additionalImagePaths ?? []).map((url) => ({
+    url,
+    altText,
+    width: 0,
+    height: 0,
+  }));
+
+  const images = featuredImage ? [featuredImage, ...additionalImages] : additionalImages;
 
   return {
     id: entry.id,
     handle: entry.handle,
     title: entry.title,
     featuredImage,
-    images: featuredImage ? [featuredImage] : [],
+    images,
     price: entry.price,
     compareAtPrice: entry.compareAtPrice,
     vendor: entry.vendor?.trim() ? entry.vendor : brandName,
