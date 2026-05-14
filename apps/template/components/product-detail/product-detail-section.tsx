@@ -24,6 +24,7 @@ import {
   computeInitialSelectedOptions,
   getPartitionedImagesForSelectedColor,
   getSharedImages,
+  getUniformDisplayPrice,
   hasColorImagePartitioning,
   hasUniformPricing,
   hasUniformStock,
@@ -52,6 +53,9 @@ export async function ProductDetailSection({
 
   const needsPartitioning = hasColorImagePartitioning(options, variants);
   const uniformPrice = hasUniformPricing(variants);
+  const uniformDisplayPrice = uniformPrice
+    ? getUniformDisplayPrice(variants, product.priceRange)
+    : null;
   const singleVariant = variants.length === 1;
   const uniformStock = hasUniformStock(variants);
 
@@ -134,15 +138,13 @@ export async function ProductDetailSection({
           <h1 className="font-display font-semibold text-foreground tracking-tight text-3xl">
             {title}
           </h1>
-          {uniformPrice ? (
-            variants[0] && (
-              <ProductPrice
-                amount={variants[0].price.amount}
-                currencyCode={variants[0].price.currencyCode}
-                compareAtAmount={variants[0].compareAtPrice?.amount}
-                locale={locale}
-              />
-            )
+          {uniformDisplayPrice ? (
+            <ProductPrice
+              amount={uniformDisplayPrice.amount}
+              currencyCode={uniformDisplayPrice.currencyCode}
+              compareAtAmount={uniformDisplayPrice.compareAtAmount}
+              locale={locale}
+            />
           ) : (
             <Suspense fallback={<div className="h-6" aria-hidden />}>
               <ResolvedPrice

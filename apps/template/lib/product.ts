@@ -1,6 +1,12 @@
 import { getNumericShopifyId } from "@/lib/shopify/utils";
 import type { Image, Money, ProductOption, ProductVariant, SelectedOption } from "@/lib/types";
 
+export interface DisplayPrice {
+  amount: string;
+  currencyCode: string;
+  compareAtAmount?: string;
+}
+
 export type SelectedOptions = Record<string, string>;
 
 /** Called server-side so the initial HTML matches hydrated state (zero CLS). */
@@ -243,6 +249,25 @@ export function getPartitionedImagesForSelectedColor(
   }
 
   return { colorImages, otherImages };
+}
+
+// Brand-catalog products carry no variants; the price lives only on priceRange.minVariantPrice.
+export function getUniformDisplayPrice(
+  variants: ProductVariant[],
+  priceRange: { minVariantPrice: Money },
+): DisplayPrice {
+  const variant = variants[0];
+  if (variant) {
+    return {
+      amount: variant.price.amount,
+      currencyCode: variant.price.currencyCode,
+      compareAtAmount: variant.compareAtPrice?.amount,
+    };
+  }
+  return {
+    amount: priceRange.minVariantPrice.amount,
+    currencyCode: priceRange.minVariantPrice.currencyCode,
+  };
 }
 
 /** When true, the price renders without waiting for searchParams to resolve the variant. */
