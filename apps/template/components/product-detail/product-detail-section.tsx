@@ -6,6 +6,7 @@ import {
   type ProductCardAspectRatio,
 } from "@/components/product-card/components";
 import { BuyButtons } from "@/components/product-detail/buy-buttons";
+import { BuyButtonsPlaceholder } from "@/components/product-detail/buy-buttons-placeholder";
 import {
   ProductInfoDescription,
   ProductInfoOptions,
@@ -182,7 +183,9 @@ export async function ProductDetailSection({
             />
           </Suspense>
         )}
-        {isBrandCatalogActive() ? null : singleVariant && eagerSelectedVariant ? (
+        {isBrandCatalogActive() ? (
+          <BuyButtonsPlaceholder availableForSale={product.availableForSale} />
+        ) : singleVariant && eagerSelectedVariant ? (
           <BuyButtons
             selectedVariant={eagerSelectedVariant}
             title={title}
