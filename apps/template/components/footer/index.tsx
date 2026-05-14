@@ -71,7 +71,7 @@ function FooterMenu({ items }: { items: MenuItem[] }) {
                 <li key={leaf.id}>
                   <MenuLink
                     url={leaf.url}
-                    className="block text-sm text-muted-foreground hover:text-foreground transition-colors"
+                    className="block text-sm text-muted-foreground hover:text-primary transition-colors"
                   >
                     {leaf.title}
                   </MenuLink>

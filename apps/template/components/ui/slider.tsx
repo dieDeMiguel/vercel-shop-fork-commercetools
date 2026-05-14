@@ -101,7 +101,7 @@ function SliderTitle({ className, children, ...props }: React.ComponentProps<"h2
   return (
     <h2
       data-slot="slider-title"
-      className={cn("text-2xl sm:text-3xl font-semibold tracking-tighter", className)}
+      className={cn("text-2xl sm:text-3xl font-display font-semibold tracking-tighter", className)}
       {...props}
     >
       {children}

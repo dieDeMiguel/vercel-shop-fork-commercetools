@@ -434,6 +434,11 @@ export async function getSearchFacets(params: {
   cacheLife("max");
   cacheTag("products");
 
+  const brandCatalog = loadBrandCatalog();
+  if (brandCatalog) {
+    return { filters: [], total: brandCatalog.products.length };
+  }
+
   const { query, collection, filters = [], locale = defaultLocale } = params;
   const country = getCountryCode(locale);
   const language = getLanguageCode(locale);
@@ -490,6 +495,23 @@ export async function searchIndexProducts(params: {
     filters = [],
     locale = defaultLocale,
   } = params;
+
+  const brandCatalog = loadBrandCatalog();
+  if (brandCatalog) {
+    const products = brandCatalog.products
+      .slice(0, limit)
+      .map((entry) => toProductCard(entry, brandCatalog.brandName));
+    return {
+      products,
+      total: brandCatalog.products.length,
+      pageInfo: {
+        hasNextPage: false,
+        hasPreviousPage: false,
+        startCursor: null,
+        endCursor: null,
+      },
+    };
+  }
 
   const sortConfig = SEARCH_SORT_KEY_MAP[rawSortKey] ?? SEARCH_SORT_KEY_MAP["best-matches"];
   const country = getCountryCode(locale);
